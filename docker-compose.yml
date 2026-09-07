@@ -1,36 +1,81 @@
+```yaml
 services:
+
+  # -------------------------
+  # Database Tier - MySQL
+  # -------------------------
   vprodb:
-    build: 
+    build:
       context: ./Docker-files/db
     image: kiranmorab/vprofiledb
     container_name: vprodb
+
     ports:
       - "3306:3306"
+
     volumes:
       - vprodbdata:/var/lib/mysql
+
     environment:
       - MYSQL_ROOT_PASSWORD=vprodbpass
 
+    networks:
+      - vprofile-network
 
+
+  # -------------------------
+  # Application Tier - Java/Tomcat
+  # -------------------------
   vproapp:
-    build: 
+    build:
       context: ./Docker-files/app
     image: kiranmorab/vprofileapp
     container_name: vproapp
+
     ports:
       - "8080:8080"
+
     volumes:
       - vproappdata:/usr/local/tomcat/webapps
-    
+
+    networks:
+      - vprofile-network
+
+    depends_on:
+      - vprodb
+
+
+  # -------------------------
+  # Web Tier - Nginx
+  # -------------------------
   vproweb:
-    build: 
+    build:
       context: ./Docker-files/web
     image: kiranmorab/vprofileweb
     container_name: vproweb
+
     ports:
       - "80:80"
 
+    networks:
+      - vprofile-network
+
+    depends_on:
+      - vproapp
+
+
+# -------------------------
+# Volumes
+# -------------------------
 volumes:
-   vprodbdata: {}
-   vproappdata: {}
-  
+  vprodbdata:
+  vproappdata:
+
+
+# -------------------------
+# Network
+# -------------------------
+networks:
+  vprofile-network:
+    driver: bridge
+```
